@@ -1,0 +1,144 @@
+= mxt
+
+== Introduction
+
+This document specifies the mxt file format.
+The mxt format is designed to mix diffent file formats in one text file.
+A pracitcal use case are situations there you must work with multiple text
+files that have different file formats.
+
+== Notation and Conventions
+
+The extension of a mxt file should be *.mxt*.
+
+The main structure in a mxt file is a list of *chunks*.
+A *chunk* is subdivided via a `'newline'` into a *header* and *content* part.
+
+The *content* represents the content of a text file that is embedded in the mxt
+file.
+
+The *header* contains the *name* of the *chunk* and an optional *comment*
+section as information.
+Furthermore has a header the mxt specific elements *marker*, *arrow* and the
+optional *salt* for the next header.
+
+A minimum *header* needs a *marker*, *name* and *arrow* element.
+
+----
+// name.of.chunk -->
+----
+
+The *marker* marks the end of the previous content and the begining of the
+header.
+It starts with `'//'` followed by a optional *salt* value that is surround by a
+`'-'` and must match the *salt* of the previous *header*.
+All bytes till the next `'space'` will be interpretet as marker.
+
+The following *name* must be a `'word'`.
+A `'word'` is character sequence with unicode values > `'U+0020'`.
+
+The *arrow* element can be any `'word'` that has the character sequence `'-->'`
+at the end.
+
+----
+//-salt-+++++++++++++++++++++++++ Σ-element +++++++++++++++++++++++++++++++++-->
+----
+
+The optional *comment* in a header can span other several lines until it reaches
+an *arrow* element.
+Each of this lines must start with `'//'`.
+A parser should replace the the `'newline'` and `'//'` with a simple `'space'`.
+Lines that contain only a `'//'` at the start should be replaced with a
+`'newline'`.
+
+The following header should lead to the comment string
+`'This is the\ncomment.'`.
+
+----
+// filename This
+// is the 
+//
+// comment.
+//-------------->
+----
+
+The second optional element in the header is the *salt* value.
+It should be used if the *content* contains `'//'` at the beginning of a line.
+The *salt* value itself can be any `'word'`.
+
+.Definition of Keywords:
+* `newline` = (U+000D)U+000A
+* `//` = U+002F U+002F
+* `space` = U+0020
+* `-->` = U+002D U+002D U+003E
+* `word` = * > U+0020
+
+== Example
+
+The following example shows how a complete mxt file can look.
+
+.example.mxt
+----
+//---------------------------------------------------------------- user.json -->
+{
+   "user": "alucard",
+   "password": "C:SotN1997"
+}
+//--------------------------------------------------------------- connection.ini
+// comment line that is not part of the ini file,
+// comment lines will be joined with a space character
+//
+// empty comment lines will generate a newline character in the comment
+//----------------------------------------------------------------------------->
+request: GET
+
+[url]
+schema=http
+host=localhost
+port=8080
+path=/db/add
+// user.pgp --> XYZ
+-----BEGIN PGP MESSAGE-----
+
+hQEMA8p144+Gi+YpAQf/VeFG9Zb+8w9aldWll8n2g3jqpE613LKg2XAJgwXQmSQL
+R4O+TlQakJ+Mz5vM4IxxubPgYCyt6cyL7qM3oJIuk7vsqMbl5t7c/dOfXjj7goIC
+IskIX+9e5qrr8jRG/KZYSdBJtFEI9oNtZTLlnv3yeV3OWNTbUnjdTWrk/h1kavJE
+5psOaTgH+Yg0utcF9Y0AqTo/o6EmiAn+uQlE5l9GTSzq51jRNiMoZRaXfUeznneF
+SDn/eFve7VlLV60j8LcXSrXgiIXEYi9ZgvWHHV+h9yorQXu24fgrEd0AhE/adiJm
+dzEHVCb+Q0i0p14hE2QQYdDE0zLxZN+FZJy/MiWwHtLA0QFZ+Zh47Zmiq14WyMPp
+4ASQ/wNpwmZmpsiKDweUTlng3MTjifopmTeglPmRKsIOvUbTnA3yetznViugSYrA
+jPuSltUZpdLTrOPrOrbPorxKmurKmswZje1hoXIrpPN2KzTnA0UNH6GKOnMjLtRH
+uXMlS3q/GkIcXYDJIVFsEU3dGWMJFOtF4HPlyHmB8Gko8cDep6ugPbgJt8LBu3+p
+zE00pkAd4Kf7yodSUR6mRJm5qK+vqp7dnkZd/WhTNRihMoqRY2oKiH2rHjFSa76s
+D8nD4suo6ckVzYGJpknGSIAwaCFlW0aqR/3SWO4wi6ibbfub8LA73V90Ll3/S/Ph
+xU15HYmdCATnVX1sp1PWmyz972bMvl8txyIKMUueVw+w0C19ZTfWXjuFSguF7zt7
+RY+I3to2lbyVJbcI9Dyz04GOJZ2vIhG9eq65FxeweAKDa7L+iH1NA5L2lYd9DEr1
+ro/CU6vIqkOSNRUrNYDwqz1g3Z3eAQB/8t9Y4WsV4KL0M229rsFrtl26i7+quYfg
+uuTd
+=WxK9
+-----END PGP MESSAGE-----
+//-XYZ- hello-world.h -->
+//------------------------------------------------------------ hello-world.c -->
+// this is part of hello-world.c
+#include<stdio.h>
+
+int main(void) {
+    printf("Hello World\n");
+    return 0;
+}
+----
+
+== Implementations
+
+A reference implementation in Lua is part of LuaZDF<<1>>
+
+[role="impllist"]
+--
+include::Implementations.adoc[]
+--
+
+== References
+[bibliography]
+- [[[1]]] https://luazdf.aiq.dk/fn/readmxtfile.html
+
+

@@ -1,0 +1,11 @@
+// List of all implementations in AsciiDoc
+// Syntax:
+// .<Name of the Programming Language>
+// * https://prj.url.com/[<name>]
+//
+// Example:
+// .Lua
+// * https://luazdf.aiq.dk/fn/readmxtfile.html[readmxtfile]
+
+.Lua
+* https://luazdf.aiq.dk/fn/readmxtfile.html[readmxtfile]
